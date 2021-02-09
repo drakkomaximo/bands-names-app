@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { SocketContext } from "../../context/SocketContext";
 /* import PropTypes from 'prop-types' */
 
-const BandAdd = ({ addBand }) => {
+const BandAdd = () => {
   const [valor, setValor] = useState("");
   const [nullValor, setNullValor] = useState(false);
+  const { socket } = useContext( SocketContext )
 
   const onSubmit = (ev) => {
     ev.preventDefault();
 
     if (valor.trim().length > 0) {
-      addBand(valor);
+      socket.emit('add-new-band', {
+        name: valor
+      })
       setNullValor(false);
     } else {
       setNullValor(true);

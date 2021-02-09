@@ -1,16 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { SocketContext } from "../../context/SocketContext";
 /* import PropTypes from 'prop-types' */
 
-const BandList = ({ data, vote, deleteBand, changeBandName }) => {
-  const [bands, setbands] = useState([]);
+const BandList = ({setBandsLength}) => {
+  
+  const [bands, setBands] = useState([]);
+  const { socket } = useContext(SocketContext);
 
   useEffect(() => {
-    setbands(data);
-  }, [data]);
+    socket?.on("current-band-list", (bands) => {
+      if(bands.length > 0){
+        setBands(bands);
+        setBandsLength(true)
+      }else{
+        setBands([])
+        setBandsLength(false)
+
+      }
+    });
+    return ()=> socket.off("current-band-list");
+  }, [socket]);
 
   const changeName = (e, bandId) => {
     const newName = e.target.value;
-    setbands((bands) =>
+    setBands((bands) =>
       bands.map((band) => {
         if (band.id === bandId) {
           return {
@@ -25,9 +38,17 @@ const BandList = ({ data, vote, deleteBand, changeBandName }) => {
     );
   };
 
-  const onPerdioFoco = (bandId, bandName) => {
-    changeBandName( bandId, bandName )
+  const onPerdioFoco = (id, name) => {
+    socket.emit("change-band-name", { id, name });
   };
+
+  const vote = (id) => {
+    socket.emit('vote-band', id)
+  }
+
+  const deleteBand = (id) => {
+    socket.emit('delete-band', id)
+  }
 
   const crearRows = () => {
     return bands.map((band) => (
